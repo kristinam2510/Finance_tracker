@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>College Finance Tracker</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden; /* Prevents horizontal scrolling */
+            background-color: #e6f2ff;
+            font-family: 'Arial', sans-serif;
+        }
+        h1, h2 {
+            text-align: center;
+            color: #003366;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .container:last-child {
+            margin-bottom: 0; /* Removes extra space at the bottom */
+        }
+        .button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            margin: 10px 0;
+            transition: background-color 0.3s ease;
+        }
+        .button:hover {
+            background-color: #0056b3;
+        }
+        .input-field {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 2px solid #007BFF;
+            border-radius: 8px;
+            font-size: 16px;
+            background-color: #f9f9f9;
+        }
+        .input-field:focus {
+            border-color: #0056b3;
+            outline: none;
+        }
+        .transaction-list {
+            margin-top: 20px;
+        }
+        .transaction-item {
+            padding: 12px;
+            background-color: #f1f1f1;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+        .transaction-item p {
+            margin: 5px 0;
+            color: #333;
+        }
+        .transaction-item:nth-child(odd) {
+            background-color: #f9f9f9;
+        }
+        .transaction-item:nth-child(even) {
+            background-color: #e6f2ff;
+        }
+        .transaction-item .transaction-header {
+            font-weight: bold;
+            color: #003366;
+        }
+        .summary-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+        .summary-item {
+            margin-bottom: 15px;
+            font-size: 18px;
+            color: #333;
+        }
+        .progress-bar {
+            width: 100%;
+            background-color: #f1f1f1;
+            border-radius: 8px;
+            height: 20px;
+            margin-top: 10px;
+        }
+        .progress-bar-filled {
+            height: 100%;
+            background-color: #007BFF;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>College Finance Tracker</h1>
+
+    <div class="container">
+        <h2>Enter Your Income</h2>
+        <input type="number" id="income" class="input-field" placeholder="Total income or scholarship amount" required>
+        
+        <button class="button" onclick="addTransaction()">Add Transaction</button>
+        <button class="button" onclick="viewTransactions()">View Transactions</button>
+        <button class="button" onclick="deleteTransaction()">Delete Transaction</button>
+        <button class="button" onclick="setSavingsGoal()">Set Savings Goal</button>
+        <button class="button" onclick="viewFinancialSummary()">View Financial Summary</button>
+        <button class="button" onclick="saveTransactions()">Save Transactions</button>
+    </div>
+
+    <div id="transactionList" class="container transaction-list"></div>
+
+    <script>
+        let transactions = [];
+        let income = 0;
+        let savingsGoal = 0;
+
+        function addTransaction() {
+            const category = prompt("Enter category (e.g., Tuition, Rent, Food):");
+            const amount = parseFloat(prompt("Enter amount:"));
+            const date = prompt("Enter date (YYYY-MM-DD):");
+            const type = prompt("Is this a credit or debit? (c/d):");
+
+            const isCredit = (type.toLowerCase() === 'c');
+            transactions.push({ category, amount, date, isCredit });
+
+            alert("Transaction added successfully!");
+        }
+
+        function viewTransactions() {
+            let transactionHTML = '<h2>Transaction List</h2>';
+            if (transactions.length === 0) {
+                transactionHTML += '<p>No transactions available.</p>';
+            } else {
+                transactions.forEach((trans, index) => {
+                    transactionHTML += `
+                        <div class="transaction-item">
+                            <p class="transaction-header">Transaction ${index + 1}</p>
+                            <p>Category: ${trans.category}</p>
+                            <p>Amount: $${trans.amount}</p>
+                            <p>Date: ${trans.date}</p>
+                            <p>Type: ${trans.isCredit ? 'Credit' : 'Debit'}</p>
+                        </div>
+                    `;
+                });
+            }
+            document.getElementById('transactionList').innerHTML = transactionHTML;
+        }
+
+        function deleteTransaction() {
+            const index = parseInt(prompt("Enter the number of the transaction to delete (1, 2, ...):")) - 1;
+
+            if (index >= 0 && index < transactions.length) {
+                transactions.splice(index, 1);
+                alert("Transaction deleted successfully!");
+            } else {
+                alert("Invalid transaction number!");
+            }
+        }
+
+        function setSavingsGoal() {
+            savingsGoal = parseFloat(prompt("Enter your savings goal:"));
+            alert(`Savings goal set to $${savingsGoal}`);
+        }
+
+        function viewFinancialSummary() {
+            const totalExpenses = transactions.filter(t => !t.isCredit).reduce((acc, trans) => acc + trans.amount, 0);
+            const totalCredits = transactions.filter(t => t.isCredit).reduce((acc, trans) => acc + trans.amount, 0);
+            const savings = income + totalCredits - totalExpenses;
+            const remaining = savingsGoal - savings;
+            const progress = (savings / savingsGoal) * 100;
+
+            let summaryHTML = `
+                <div class="summary-container">
+                    <h2>Financial Summary</h2>
+                    <p class="summary-item">Total Income (Initial + Credits): $${income + totalCredits}</p>
+                    <p class="summary-item">Total Expenses: $${totalExpenses}</p>
+                    <p class="summary-item">Total Savings: $${savings}</p>
+                    <p class="summary-item">Savings Goal: $${savingsGoal}</p>
+            `;
+
+            if (savings >= savingsGoal) {
+                summaryHTML += "<p class='summary-item'>Congratulations! You've reached your savings goal!</p>";
+            } else {
+                summaryHTML += `<p class='summary-item'>You have saved ${progress.toFixed(2)}% of your goal.</p>`;
+                summaryHTML += `<p class='summary-item'>You need $${remaining.toFixed(2)} more to reach your goal.</p>`;
+            }
+
+            summaryHTML += `
+                <div class="progress-bar">
+                    <div class="progress-bar-filled" style="width: ${progress}%"></div>
+                </div>
+            </div>`;
+
+            document.getElementById('transactionList').innerHTML = summaryHTML;
+        }
+    </script>
+
+</body>
+</html>
